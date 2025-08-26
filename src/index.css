@@ -3,5 +3,4 @@
 @tailwind components;
 @tailwind utilities;
 
-/* visible focus states */
-:focus-visible { outline: none; }
+/* Keep default focus outlines for accessibility */
