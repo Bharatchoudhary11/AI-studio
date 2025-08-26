@@ -20,7 +20,16 @@ function App() {
   const retryRef = useRef<number | null>(null)
 
   useEffect(() => {
-    window.localStorage.setItem('history', JSON.stringify(history.slice(0, 5)))
+    const entries = history.slice(0, 5).map(
+      ({ id, imageUrl, prompt, style, createdAt }) => ({
+        id,
+        imageUrl,
+        prompt,
+        style,
+        createdAt,
+      }),
+    )
+    window.localStorage.setItem('history', JSON.stringify(entries))
   }, [history])
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,6 +252,9 @@ function App() {
                   <div>
                     <p className="text-sm">{item.prompt}</p>
                     <p className="text-xs text-gray-500">{item.style}</p>
+                    <p className="text-[10px] text-gray-400">
+                      {new Date(item.createdAt).toLocaleString()}
+                    </p>
                   </div>
                 </button>
               </li>
