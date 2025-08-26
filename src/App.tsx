@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { mockGenerate, type GenerationResult } from './api'
+
+const History = lazy(() => import('./History'))
 
 const styleOptions = ['Editorial', 'Streetwear', 'Vintage']
 
@@ -136,8 +138,10 @@ function App() {
         />
       </div>
 
-      {preview && (
+      {preview ? (
         <img src={preview} alt="preview" className="max-h-60 object-contain" />
+      ) : (
+        <p className="text-gray-500">No preview available</p>
       )}
 
       <div>
@@ -233,35 +237,9 @@ function App() {
         </p>
       )}
 
-      {history.length > 0 && (
-        <div>
-          <h2 className="font-semibold mb-2">History</h2>
-          <ul className="space-y-2">
-            {history.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => handleSelectHistory(item)}
-                  className="flex items-center gap-2 w-full text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <img
-                    src={item.imageUrl}
-                    alt="history item"
-                    className="w-16 h-16 object-cover"
-                  />
-                  <div>
-                    <p className="text-sm">{item.prompt}</p>
-                    <p className="text-xs text-gray-500">{item.style}</p>
-                    <p className="text-[10px] text-gray-400">
-                      {new Date(item.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <Suspense fallback={<p>Loading history...</p>}>
+        <History history={history} onSelect={handleSelectHistory} />
+      </Suspense>
     </div>
   )
 }
