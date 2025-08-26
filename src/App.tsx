@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { GenerationResult, mockGenerate } from './api'
+import { mockGenerate, type GenerationResult } from './api'
 
 const styleOptions = ['Editorial', 'Streetwear', 'Vintage']
 
