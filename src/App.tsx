@@ -22,18 +22,28 @@ function App() {
     window.localStorage.setItem('history', JSON.stringify(history.slice(0, 5)))
   }, [history])
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
     if (!f) return
     if (!['image/png', 'image/jpeg'].includes(f.type)) {
       setError('Only PNG or JPG files are allowed')
       return
     }
+    let processed = f
+    let previewUrl = URL.createObjectURL(f)
     if (f.size > 10 * 1024 * 1024) {
-      console.warn('File over 10MB, will downscale before sending')
+      try {
+        const dataUrl = await resizeImage(f)
+        const blob = await fetch(dataUrl).then((r) => r.blob())
+        processed = new File([blob], f.name, { type: blob.type })
+        previewUrl = dataUrl
+      } catch {
+        setError('Failed to process image')
+        return
+      }
     }
-    setFile(f)
-    setPreview(URL.createObjectURL(f))
+    setFile(processed)
+    setPreview(previewUrl)
     setError(null)
   }
 
@@ -257,7 +267,7 @@ async function resizeImage(file: File, maxSize = 1920): Promise<string> {
           return
         }
         ctx.drawImage(img, 0, 0, width, height)
-        resolve(canvas.toDataURL('image/jpeg'))
+        resolve(canvas.toDataURL(file.type))
       }
       img.onerror = reject
       img.src = reader.result as string
