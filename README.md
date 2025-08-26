@@ -1,69 +1,52 @@
-# React + TypeScript + Vite
+# AI Studio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AI Studio is a small demonstration app built with **React**, **TypeScript**, **Vite** and **Tailwind CSS**. It lets you upload an image, describe an edit prompt and mock an AI "generation" that returns an updated image. Results are stored in a local history and can be revisited later.
 
-Currently, two official plugins are available:
+## Installation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Install [Node.js](https://nodejs.org/) (v18 or later).
+2. Install dependencies:
 
-## Expanding the ESLint configuration
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Running the app
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Start the development server with Vite:
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The site is served at <http://localhost:5173> by default.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+To create an optimized production build:
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## Testing
+
+This project does not yet include an automated test suite. Running `npm test` will report `missing script: test`.
+
+For basic checks you can run ESLint:
+
+```bash
+npm run lint
+```
+
+## Design notes
+
+- **Mocked API** – `src/api.ts` exports `mockGenerate`, a Promise‑based function that simulates calling an image generation model and randomly fails to emulate transient errors.
+- **App component** – `src/App.tsx` handles file uploads, resizes large images on the client, dispatches requests to the mock API and retries failed generations with exponential backoff. Requests can be aborted and the last five successful generations are persisted to `localStorage`.
+- **Lazy history** – the `History` component is dynamically imported to reduce the initial bundle. It renders the recent generations and allows re‑selecting them.
+- **Error boundary & service worker** – `src/ErrorBoundary.tsx` guards the UI against runtime failures, and `src/main.tsx` registers a service worker (if available) for offline support.
+
