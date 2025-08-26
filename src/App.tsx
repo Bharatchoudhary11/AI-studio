@@ -17,6 +17,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const retryRef = useRef<number | null>(null)
 
   useEffect(() => {
     window.localStorage.setItem('history', JSON.stringify(history.slice(0, 5)))
@@ -57,6 +58,7 @@ function App() {
   }
 
   const attemptGenerate = async (controller: AbortController, attempt: number) => {
+    if (controller.signal.aborted) return
     try {
       const imageDataUrl = await resizeImage(file!)
       const result = await mockGenerate({
@@ -69,26 +71,36 @@ function App() {
       setPreview(result.imageUrl)
       setLoading(false)
       abortRef.current = null
+      retryRef.current = null
     } catch (err) {
       if (controller.signal.aborted) {
         setError('Generation aborted')
         setLoading(false)
         abortRef.current = null
+        retryRef.current = null
         return
       }
       if (attempt < 2) {
         const delay = 500 * 2 ** attempt
-        setTimeout(() => attemptGenerate(controller, attempt + 1), delay)
+        retryRef.current = window.setTimeout(
+          () => attemptGenerate(controller, attempt + 1),
+          delay,
+        )
       } else {
         setError((err as Error).message)
         setLoading(false)
         abortRef.current = null
+        retryRef.current = null
       }
     }
   }
 
   const handleAbort = () => {
     abortRef.current?.abort()
+    if (retryRef.current) {
+      clearTimeout(retryRef.current)
+      retryRef.current = null
+    }
   }
 
   const handleSelectHistory = (item: GenerationResult) => {
